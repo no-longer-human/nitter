@@ -26,7 +26,9 @@
 #end proc
 #
 #proc getGeneratorAtomTags(cfg: Config): string =
-<atom:generator uri="${getUrlPrefix(cfg)}" version="${getVersionString()}">Nitter (version ${getVersionString()}) at ${getUrlPrefix(cfg)}</atom:generator>
+<atom:generator uri="${getUrlPrefix(cfg)}" version="${getVersionString()}">
+    Nitter (version ${getVersionString()}) at ${getUrlPrefix(cfg)}
+</atom:generator>
 #end proc
 #
 #proc renderRssTweet(tweet: Tweet; cfg: Config): string =

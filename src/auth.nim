@@ -1,5 +1,5 @@
 #SPDX-License-Identifier: AGPL-3.0-only
-import std/[asyncdispatch, times, json, random, sequtils, strutils, tables, packedsets, os]
+import std/[asyncdispatch, times, json, random, strutils, tables, packedsets, os]
 import types
 import experimental/parser/guestaccount
 
