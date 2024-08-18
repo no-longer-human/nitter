@@ -1,14 +1,22 @@
+# Binary
 nitter
+
+# Configuration files
+nitter.conf
+guest_accounts.json*
+
+# Output files
 *.html
 *.db
-/tests/__pycache__
+/public/css/style.css
+/public/md/*.html
+dump.rdb
+/latest_logs/
+
+# Test files
+__pycache__/
 /tests/geckodriver.log
 /tests/downloaded_files
 /tests/latest_logs
 /tools/gencss
 /tools/rendermd
-/public/css/style.css
-/public/md/*.html
-nitter.conf
-guest_accounts.json*
-dump.rdb
