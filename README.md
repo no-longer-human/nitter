@@ -192,6 +192,24 @@ this: `journalctl -u nitter.service` (add `--follow` to see just the last 15
 lines). If you're running the Docker image, you can do this:
 `docker logs --follow *nitter container id*`
 
+## Testing and running from source
+
+Run the backend locally:
+
+```
+cp nitter.example.conf nitter.conf
+touch guest_accounts.jsonl
+nimble md
+# setup redis
+nimble run
+```
+
+Run tests:
+
+```
+pytest test
+```
+
 ## Contact
 
 Feel free to join our [Matrix channel](https://matrix.to/#/#nitter:matrix.org).
