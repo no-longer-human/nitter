@@ -8,6 +8,9 @@ const
   link = "https://github.com/zedeus/nitter/commit/" & hash
   version = &"{date}-{hash}"
 
+proc getVersionString*(): string =
+  version
+
 var aboutHtml: string
 
 proc initAboutPage*(dir: string) =
@@ -23,4 +26,4 @@ proc renderAbout*(): VNode =
     h2: text "Instance info"
     p:
       text "Version "
-      a(href=link): text version
+      a(href=link): text getVersionString()

@@ -2,6 +2,7 @@
 ## SPDX-License-Identifier: AGPL-3.0-only
 #import strutils, xmltree, strformat, options, unicode
 #import ../types, ../utils, ../formatters, ../prefs
+#import about
 #
 #proc getTitle(tweet: Tweet; retweet: string): string =
 #if tweet.pinned: result = "Pinned: "
@@ -25,7 +26,7 @@
 #end proc
 #
 #proc getGenerator(cfg: Config): string =
-<atom:generator uri="${cfg.hostname}" version="1.0.0-TODO">Nitter at ${cfg.hostname}</atom:generator>
+<atom:generator uri="${cfg.hostname}" version="${getVersionString()}">Nitter ${getVersionString()} at ${cfg.hostname}</atom:generator>
 #end proc
 #
 #proc renderRssTweet(tweet: Tweet; cfg: Config): string =
