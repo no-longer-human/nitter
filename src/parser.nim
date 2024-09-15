@@ -33,7 +33,7 @@ proc parseGraphUser(js: JsonNode): User =
   var user = js{"user_result", "result"}
   if user.isNull:
     user = ? js{"user_results", "result"}
-  
+
   result = parseUser(user{"legacy"})
 
   if result.verifiedType == VerifiedType.none and user{"is_blue_verified"}.getBool(false):
@@ -217,8 +217,10 @@ proc parseTweet(js: JsonNode; jsCard: JsonNode = newJNull()): Tweet =
       replies: js{"reply_count"}.getInt,
       retweets: js{"retweet_count"}.getInt,
       likes: js{"favorite_count"}.getInt,
-      quotes: js{"quote_count"}.getInt
-    )
+      quotes: js{"quote_count"}.getInt,
+    ),
+    possiblySensitive: js{"possibly_sensitive"}.getBool,
+    languageCode: js{"lang"}.getStr,
   )
 
   # fix for pinned threads

@@ -216,6 +216,8 @@ type
     video*: Option[Video]
     photos*: seq[string]
     hashtagsParsed*: seq[string]
+    possiblySensitive*: bool
+    languageCode*: string
 
   Tweets* = seq[Tweet]
 
