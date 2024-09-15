@@ -215,6 +215,7 @@ type
     gif*: Option[Gif]
     video*: Option[Video]
     photos*: seq[string]
+    hashtagsParsed*: seq[string]
 
   Tweets* = seq[Tweet]
 
@@ -286,6 +287,9 @@ type
 
   Rss* = object
     feed*, cursor*: string
+
+  RssOutputFormat* = ref object
+    enforceNonEmptyTitle*: bool
 
 proc contains*(thread: Chain; tweet: Tweet): bool =
   thread.content.anyIt(it.id == tweet.id)

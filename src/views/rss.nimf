@@ -4,7 +4,7 @@
 #import ../types, ../utils, ../formatters, ../prefs
 #import about
 #
-#proc getTitle(tweet: Tweet; retweet: string): string =
+#proc getTitle(tweet: Tweet; retweet: string; format: RssOutputFormat): string =
 #if tweet.pinned: result = "Pinned: "
 #elif retweet.len > 0: result = &"RT by @{retweet}: "
 #elif tweet.reply.len > 0: result = &"R to @{tweet.reply[0]}: "
@@ -16,19 +16,25 @@
 #result &= xmltree.escape(text)
 #if result.len > 0: return
 #end if
-#if tweet.photos.len > 0:
+#if tweet.photos.len > 0 and format.enforceNonEmptyTitle:
 #  result &= "Image"
-#elif tweet.video.isSome:
+#elif tweet.video.isSome and format.enforceNonEmptyTitle:
 #  result &= "Video"
-#elif tweet.gif.isSome:
+#elif tweet.gif.isSome and format.enforceNonEmptyTitle:
 #  result &= "Gif"
 #end if
 #end proc
 #
-#proc getGeneratorAtomTags(cfg: Config): string =
+#proc renderGeneratorAtomTags(cfg: Config): string =
 <atom:generator uri="${getUrlPrefix(cfg)}" version="${getVersionString()}">
     Nitter (version ${getVersionString()}) at ${getUrlPrefix(cfg)}
 </atom:generator>
+#end proc
+#
+#proc renderCategories(tweet: Tweet): string =
+#  for tag in tweet.hashtagsParsed:
+     <category>${tag}</category>
+#  end for
 #end proc
 #
 #proc renderRssTweet(tweet: Tweet; cfg: Config): string =
@@ -58,7 +64,7 @@
 #end if
 #end proc
 #
-#proc renderRssTweets(tweets: seq[Tweets]; cfg: Config; userId=""): string =
+#proc renderRssTweets(tweets: seq[Tweets]; cfg: Config; outputFormat: RssOutputFormat; userId=""): string =
 #var links: seq[string]
 #for thread in tweets:
 #  for tweet in thread:
@@ -72,7 +78,7 @@
 #    end if
 #    links.add link
       <item>
-        <title>${getTitle(tweet, retweet)}</title>
+        <title>${getTitle(tweet, retweet, outputFormat)}</title>
         <dc:creator>@${tweet.user.username}</dc:creator>
         <atom:author>
           <atom:name>${tweet.user.username}</atom:name>
@@ -82,13 +88,13 @@
         <pubDate>${getRfc822Time(tweet)}</pubDate>
         <guid>${getUrlPrefix(cfg) & link}</guid>
         <link>${getUrlPrefix(cfg) & link}</link>
-        <category>TODO: Hashtag</category>
+        ${renderCategories(tweet)}
       </item>
 #  end for
 #end for
 #end proc
 #
-#proc renderTimelineRss*(profile: Profile; cfg: Config; multi=false): string =
+#proc renderTimelineRss*(profile: Profile; cfg: Config; outputFormat: RssOutputFormat; multi=false): string =
 #result = ""
 #let handle = (if multi: "" else: "@") & profile.user.username
 #var title = profile.user.fullname
@@ -101,7 +107,7 @@
     <atom:link href="${getUrlPrefix(cfg)}/${profile.user.username}/rss" rel="self" type="application/rss+xml" />
     <title>${title}</title>
     <link>${getUrlPrefix(cfg)}/${profile.user.username}</link>
-    ${getGeneratorAtomTags(cfg)}
+    ${renderGeneratorAtomTags(cfg)}
     <description>Twitter feed for user ${handle}</description>
     <language>en-us</language>
     <ttl>40</ttl>
@@ -113,13 +119,13 @@
       <height>128</height>
     </image>
 #if profile.tweets.content.len > 0:
-${renderRssTweets(profile.tweets.content, cfg, userId=profile.user.id)}
+${renderRssTweets(profile.tweets.content, cfg, outputFormat, userId=profile.user.id)}
 #end if
   </channel>
 </rss>
 #end proc
 #
-#proc renderListRss*(tweets: seq[Tweets]; list: List; cfg: Config): string =
+#proc renderListRss*(tweets: seq[Tweets]; list: List; cfg: Config; outputFormat: RssOutputFormat): string =
 #let link = &"{getUrlPrefix(cfg)}/i/lists/{list.id}"
 #result = ""
 <?xml version="1.0" encoding="UTF-8"?>
@@ -128,16 +134,16 @@ ${renderRssTweets(profile.tweets.content, cfg, userId=profile.user.id)}
     <atom:link href="${link}" rel="self" type="application/rss+xml" />
     <title>${xmltree.escape(list.name)} / @${list.username}</title>
     <link>${link}</link>
-    ${getGeneratorAtomTags(cfg)}
+    ${renderGeneratorAtomTags(cfg)}
     <description>Twitter feed for user ${list.name} by ${list.username}</description>
     <language>en-us</language>
     <ttl>40</ttl>
-${renderRssTweets(tweets, cfg)}
+${renderRssTweets(tweets, cfg, outputFormat)}
  </channel>
 </rss>
 #end proc
 #
-#proc renderSearchRss*(tweets: seq[Tweets]; name, param: string; cfg: Config): string =
+#proc renderSearchRss*(tweets: seq[Tweets]; name, param: string; cfg: Config; outputFormat: RssOutputFormat): string =
 #let link = &"{getUrlPrefix(cfg)}/search"
 #let escName = xmltree.escape(name)
 #result = ""
@@ -147,11 +153,11 @@ ${renderRssTweets(tweets, cfg)}
     <atom:link href="${link}" rel="self" type="application/rss+xml" />
     <title>Search results for "${escName}"</title>
     <link>${link}</link>
-    ${getGeneratorAtomTags(cfg)}
+    ${renderGeneratorAtomTags(cfg)}
     <description>Twitter feed for search ${escName}</description>
     <language>en-us</language>
     <ttl>40</ttl>
-${renderRssTweets(tweets, cfg)}
+${renderRssTweets(tweets, cfg, outputFormat)}
   </channel>
 </rss>
 #end proc

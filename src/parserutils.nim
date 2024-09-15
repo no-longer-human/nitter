@@ -266,9 +266,12 @@ proc expandTextEntities(tweet: Tweet; entities: JsonNode; text: string; textSlic
     for m in media:
       replacements.extractUrls(m, textSlice.b, hideTwitter = true)
 
+  var hashtagsParsed  = newSeq[string]()
   if "hashtags" in entities:
     for hashtag in entities["hashtags"]:
       replacements.extractHashtags(hashtag)
+      hashtagsParsed.add(hashTag["text"].getStr)
+      # TODO: Remove hashtags if configured to
 
   if "symbols" in entities:
     for symbol in entities["symbols"]:
@@ -293,6 +296,8 @@ proc expandTextEntities(tweet: Tweet; entities: JsonNode; text: string; textSlic
   replacements.sort(cmp)
 
   tweet.text = text.toRunes.replacedWith(replacements, textSlice).strip(leading=false)
+  echo hashtagsParsed
+  tweet.hashtagsParsed = hashtagsParsed
 
 proc expandTweetEntities*(tweet: Tweet; js: JsonNode) =
   let

@@ -40,6 +40,10 @@ template getCursor*(req: Request): string =
   decodeUrl(if cursor.len > 0: cursor
             else: req.params.getOrDefault("max_position"), false)
 
+template getRssOutputFormat*(req: Request): RssOutputFormat =
+  let allowEmptyTitle = req.params.getOrDefault("allowEmptyTitle")
+  RssOutputFormat(enforceNonEmptyTitle: allowEmptyTitle != "true")
+
 proc getNames*(name: string): seq[string] =
   name.strip(chars={'/'}).split(",").filterIt(it.len > 0)
 

@@ -21,6 +21,7 @@ proc timelineRss*(req: Request; cfg: Config; query: Query): Future[Rss] {.async.
     name = req.params.getOrDefault("name")
     after = getCursor(req)
     names = getNames(name)
+    rssOutputFormat = getRssOutputFormat(req)
 
   if names.len == 1:
     profile = await fetchProfile(after, query, cfg, skipRail=true, skipPinned=true)
@@ -39,7 +40,7 @@ proc timelineRss*(req: Request; cfg: Config; query: Query): Future[Rss] {.async.
     return Rss(feed: profile.user.username, cursor: "suspended")
 
   if profile.user.fullname.len > 0:
-    let rss = renderTimelineRss(profile, cfg, multi=(names.len > 1))
+    let rss = renderTimelineRss(profile, cfg, rssOutputFormat, multi=(names.len > 1))
     return Rss(feed: rss, cursor: profile.tweets.bottom)
 
 template respRss*(rss, page) =
@@ -71,6 +72,7 @@ proc createRssRouter*(cfg: Config) =
       let
         cursor = getCursor()
         key = redisKey("search", $hash(genQueryUrl(query)), cursor)
+        rssOutputFormat = RssOutputFormat(enforceNonEmptyTitle: true)
 
       var rss = await getCachedRss(key)
       if rss.cursor.len > 0:
@@ -78,7 +80,7 @@ proc createRssRouter*(cfg: Config) =
 
       let tweets = await getGraphTweetSearch(query, cursor)
       rss.cursor = tweets.bottom
-      rss.feed = renderSearchRss(tweets.content, query.text, genQueryUrl(query), cfg)
+      rss.feed = renderSearchRss(tweets.content, query.text, genQueryUrl(query), cfg, rssOutputFormat)
 
       await cacheRss(key, rss)
       respRss(rss, "Search")
@@ -151,6 +153,7 @@ proc createRssRouter*(cfg: Config) =
         id = @"id"
         cursor = getCursor()
         key = redisKey("lists", id, cursor)
+        rssOutputFormat = RssOutputFormat(enforceNonEmptyTitle: true)
 
       var rss = await getCachedRss(key)
       if rss.cursor.len > 0:
@@ -160,7 +163,7 @@ proc createRssRouter*(cfg: Config) =
         list = await getCachedList(id=id)
         timeline = await getGraphListTweets(list.id, cursor)
       rss.cursor = timeline.bottom
-      rss.feed = renderListRss(timeline.content, list, cfg)
+      rss.feed = renderListRss(timeline.content, list, cfg, rssOutputFormat)
 
       await cacheRss(key, rss)
       respRss(rss, "List")
